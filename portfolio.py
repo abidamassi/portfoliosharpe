@@ -108,6 +108,21 @@ st.markdown(
     .stMarkdown hr {
         border-top: 2px solid #34495e;
     }
+
+    /* Menyesuaikan tombol submit di sidebar */
+    section[data-testid="stSidebar"] .stButton button {
+        background-color: #f9ca24 !important; /* Warna kuning */
+        color: black !important;              /* Teks hitam */
+        width: 100% !important;
+        padding: 10px 0 !important;
+        font-weight: bold !important;
+        border: none !important;
+        border-radius: 5px !important;
+    }
+    section[data-testid="stSidebar"] .stButton button:hover {
+        background-color: #f1c40f !important; /* Warna saat hover */
+    }
+    
     </style>
     """,
     unsafe_allow_html=True
