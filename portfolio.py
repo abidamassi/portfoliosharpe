@@ -290,12 +290,11 @@ if submitted:
         st.markdown(
         f"""
         <div style="background-color:#1e2a47; padding: 10px; border-radius: 5px; margin-top: 10px;">
-           <p style="margin: 0; color: white; font-size: 16px;">
-            After running <strong>{scenarios}</strong> Monte Carlo simulations, we identified the highest 
-            <strong>Sharpe Ratio</strong> of <strong>{optimal_sharpe:.2f}</strong> for the above allocation.
-            This indicates that, among all tested portfolio weight combinations, 
-            this particular mix is expected to provide the strongest risk-adjusted return.
-        </p>
+            <p style="margin: 0; color: white; font-size: 16px;">
+                After running <strong>{scenarios}</strong> Monte Carlo simulation trials, we found the highest 
+                <strong>Sharpe Ratio</strong> of <strong>{optimal_sharpe:.2f}</strong> with the above allocation.
+                This indicates that, among all simulated combinations, this allocation is expected to deliver the best risk-adjusted return.
+            </p>
         </div>
         """,
         unsafe_allow_html=True
@@ -346,6 +345,13 @@ if submitted:
             st.markdown("<div class='metric-box-rule'>👍 2 to 3<br>Good</div>", unsafe_allow_html=True)
         with col_rule4:
             st.markdown("<div class='metric-box-rule'>🌟 > 3<br>Excellent</div>", unsafe_allow_html=True)
+        
+        # --- DISCLAIMER ---
+        st.markdown("""
+        <div class='disclaimer-box'>
+        ⚠️ <b>Disclaimer:</b> This tool is for educational purposes only. Please do your own research before making any investment decisions.
+        </div>
+        """, unsafe_allow_html=True)
         
         # --- FOOTER ---
         st.markdown("""<hr style="border-top: 2px solid #2c3e50;">""", unsafe_allow_html=True)
