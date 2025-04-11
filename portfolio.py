@@ -33,6 +33,15 @@ st.markdown(
     .stSidebar p, .stSidebar label, .stSidebar span {
         color: white !important;
     }
+
+    .disclaimer-box {
+        background-color: #2f3640;
+        padding: 1rem;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #f1c40f;
+        margin-top: 2rem; /* Jarak dari elemen atas */
+    }
     
     /* Hapus border, shadow, dan background dari container form jika ada */
     section[data-testid="stSidebar"] form[data-testid="stForm"],
@@ -349,8 +358,8 @@ if submitted:
         # --- DISCLAIMER ---
         st.markdown("""
         <div class='disclaimer-box'>
-        ⚠️ <b>Disclaimer:</b> This tool is for educational purposes only. Please do your own research before making any investment decisions.
-        </div>
+    ⚠️ <b>Disclaimer:</b> This tool is for educational purposes only. Please do your own research before making any investment decisions.
+    </div>
         """, unsafe_allow_html=True)
         
         # --- FOOTER ---
