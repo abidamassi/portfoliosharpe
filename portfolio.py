@@ -11,7 +11,6 @@ st.set_page_config(page_title="Optimal Portfolio Management — Finance Modeling
 st.markdown(
     """
     <style>
-
     /* Menghilangkan menu hamburger dan header */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
@@ -100,7 +99,7 @@ st.markdown(
     /* Membuat tombol Submit di sidebar melebar dan beri jarak sedikit dari atas */
     section[data-testid="stSidebar"] .stButton button {
         width: 100% !important;
-        margin-top: 6px !important; /* Ganti 5px sesuai selera */
+        margin-top: 6px !important;
     }
 
     /* Samakan dengan project ARIMA + sedikit penyesuaian */
@@ -126,7 +125,7 @@ st.markdown(
         cursor: pointer !important;
     }
     section[data-testid="stSidebar"] .stButton button:hover {
-        background-color: #ba4a00 !important; /* Sedikit lebih gelap saat hover */
+        background-color: #ba4a00 !important;
     }
     
     </style>
@@ -163,196 +162,192 @@ simulations = st.sidebar.number_input(
     value=10000
 )
 
-# Tombol submit langsung tanpa menggunakan form container
+# Tombol submit di sidebar
 submitted = st.sidebar.button("Submit")
 
-# --- MAIN LOGIC: Process input jika tombol submit ditekan ---
 if submitted:
-    # Proses ticker
-    stock_list = [ticker.strip() for ticker in ticker_input.split(",") if ticker.strip() != ""]
-    if len(stock_list) < 2:
-        st.warning("Please enter at least 2 tickers.")
-        st.stop()
-
-    st.title("📊 Optimal Portfolio Management")
-    st.markdown("<hr style='margin-top:0; border-color:#34495e; margin-bottom:2rem;'>", unsafe_allow_html=True)
-
-    # --- FETCH DATA WITH yfinance ---
-    stocks = {}
-    for ticker in stock_list:
-        try:
-            stocks[ticker] = yf.download(ticker, start=start_date, end=end_date)[['Close']]
-        except Exception as e:
-            st.warning(f"Warning: Could not fetch data for {ticker}: {e}")
+    with st.spinner("Crunching numbers and fetching data... Please wait."):
+        # --- MAIN LOGIC: Process input ---
+        # Proses ticker
+        stock_list = [ticker.strip() for ticker in ticker_input.split(",") if ticker.strip() != ""]
+        if len(stock_list) < 2:
+            st.warning("Please enter at least 2 tickers.")
             st.stop()
 
-    price_df = pd.DataFrame()
-    for ticker, df in stocks.items():
-        if not df.empty:
-            price_df[ticker] = df['Close']
-        else:
-            st.warning(f"Warning: No data for ticker {ticker}. Check the ticker or date range.")
-            st.stop()
-    price_df.dropna(inplace=True)
-    stock_returns = price_df.pct_change().dropna()
+        st.title("📊 Optimal Portfolio Management")
+        st.markdown("<hr style='margin-top:0; border-color:#34495e; margin-bottom:2rem;'>", unsafe_allow_html=True)
 
-    # --- MONTE CARLO SIMULATIONS FOR PORTFOLIO OPTIMIZATION ---
-    scenarios = simulations
-    weights_array = np.zeros((scenarios, len(stock_list)))
-    returns_array = np.zeros(scenarios)
-    volatility_array = np.zeros(scenarios)
-    sharpe_array = np.zeros(scenarios)
+        # --- FETCH DATA WITH yfinance ---
+        stocks = {}
+        for ticker in stock_list:
+            try:
+                stocks[ticker] = yf.download(ticker, start=start_date, end=end_date)[['Close']]
+            except Exception as e:
+                st.warning(f"Warning: Could not fetch data for {ticker}: {e}")
+                st.stop()
 
-    np.random.seed(3)
-    for i in range(scenarios):
-        weights = np.random.random(len(stock_list))
-        weights /= np.sum(weights)
-        weights_array[i] = weights
-        returns_array[i] = np.sum(stock_returns.mean() * 252 * weights)
-        volatility_array[i] = np.sqrt(np.dot(weights.T, np.dot(stock_returns.cov() * 252, weights)))
-        sharpe_array[i] = (returns_array[i] - risk_free_rate / 100) / volatility_array[i]
+        price_df = pd.DataFrame()
+        for ticker, df in stocks.items():
+            if not df.empty:
+                price_df[ticker] = df['Close']
+            else:
+                st.warning(f"Warning: No data for ticker {ticker}. Check the ticker or date range.")
+                st.stop()
+        price_df.dropna(inplace=True)
+        stock_returns = price_df.pct_change().dropna()
 
-    max_idx = sharpe_array.argmax()
-    optimal_weights = weights_array[max_idx]
-    optimal_return = returns_array[max_idx]
-    optimal_volatility = volatility_array[max_idx]
-    optimal_sharpe = sharpe_array[max_idx]
+        # --- MONTE CARLO SIMULATIONS FOR PORTFOLIO OPTIMIZATION ---
+        scenarios = simulations
+        weights_array = np.zeros((scenarios, len(stock_list)))
+        returns_array = np.zeros(scenarios)
+        volatility_array = np.zeros(scenarios)
+        sharpe_array = np.zeros(scenarios)
 
-    # --- DISPLAY KEY METRICS ---
+        np.random.seed(3)
+        for i in range(scenarios):
+            weights = np.random.random(len(stock_list))
+            weights /= np.sum(weights)
+            weights_array[i] = weights
+            returns_array[i] = np.sum(stock_returns.mean() * 252 * weights)
+            volatility_array[i] = np.sqrt(np.dot(weights.T, np.dot(stock_returns.cov() * 252, weights)))
+            sharpe_array[i] = (returns_array[i] - risk_free_rate / 100) / volatility_array[i]
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown(f"<div class='metric-box'>📈 Sharpe Ratio<br>{optimal_sharpe:.2f}</div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"<div class='metric-box'>💰 Annual Return<br>{optimal_return:.2%}</div>", unsafe_allow_html=True)
-    with col3:
-        st.markdown(f"<div class='metric-box'>📉 Volatility<br>{optimal_volatility:.2%}</div>", unsafe_allow_html=True)
+        max_idx = sharpe_array.argmax()
+        optimal_weights = weights_array[max_idx]
+        optimal_return = returns_array[max_idx]
+        optimal_volatility = volatility_array[max_idx]
+        optimal_sharpe = sharpe_array[max_idx]
 
-    # --- STOCK PERFORMANCE CHART ---
-    fig_performance = go.Figure()
-    for i, column in enumerate(price_df.columns):
-        fig_performance.add_trace(go.Scatter(
-            x=price_df.index, y=price_df[column], mode='lines', name=stock_list[i]
-        ))
-    fig_performance.update_layout(
-        title="Equal-Weighted Portfolio Stock Performance",
-        xaxis_title="",
-        yaxis_title="Total Value",
-        plot_bgcolor='#050915',
-        paper_bgcolor='#050915',
-        font=dict(color='white')
-    )
-    st.plotly_chart(fig_performance, use_container_width=True)
+        # --- DISPLAY KEY METRICS ---
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown(f"<div class='metric-box'>📈 Sharpe Ratio<br>{optimal_sharpe:.2f}</div>", unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"<div class='metric-box'>💰 Annual Return<br>{optimal_return:.2%}</div>", unsafe_allow_html=True)
+        with col3:
+            st.markdown(f"<div class='metric-box'>📉 Volatility<br>{optimal_volatility:.2%}</div>", unsafe_allow_html=True)
 
-    # --- PIE CHART & SCATTER PLOT ---
-    # Garis pemisah sebelum Pie & Scatter
-    st.markdown("<hr style='border-color:#34495e; margin:2rem 0;'>", unsafe_allow_html=True)
-
-    weights_df = pd.DataFrame({
-        'Stock': stock_list,
-        'Weight': optimal_weights
-    })
-    pie_chart = go.Figure(data=[go.Pie(
-        labels=weights_df['Stock'], values=weights_df['Weight'], hole=0.4
-    )])
-    pie_chart.update_layout(
-        title="Optimal Portfolio Allocation", 
-        font=dict(color='white'), paper_bgcolor="#050915"
-    )
-
-    col4, col5 = st.columns([1, 2])
-    with col4:
-        st.plotly_chart(pie_chart, use_container_width=True)
-    with col5:
-        scatter_fig = go.Figure()
-        scatter_fig.add_trace(go.Scatter(
-            x=volatility_array, y=returns_array, mode='markers',
-            marker=dict(color=sharpe_array, colorscale='Viridis', showscale=True),
-            name='Portfolios'
-        ))
-        scatter_fig.add_trace(go.Scatter(
-            x=[optimal_volatility], y=[optimal_return], mode='markers',
-            marker=dict(color='orange', size=12, line=dict(width=2, color='black')),
-            name='Optimal'
-        ))
-        scatter_fig.update_layout(
-            title="Portfolio Optimization — Return vs Volatility",
-            xaxis_title="Annualized Volatility",
-            yaxis_title="Annualized Return",
-            plot_bgcolor='#050915', paper_bgcolor='#050915', font=dict(color='white')
+        # --- STOCK PERFORMANCE CHART ---
+        fig_performance = go.Figure()
+        for i, column in enumerate(price_df.columns):
+            fig_performance.add_trace(go.Scatter(
+                x=price_df.index, y=price_df[column], mode='lines', name=stock_list[i]
+            ))
+        fig_performance.update_layout(
+            title="Equal-Weighted Portfolio Stock Performance",
+            xaxis_title="",
+            yaxis_title="Total Value",
+            plot_bgcolor='#050915',
+            paper_bgcolor='#050915',
+            font=dict(color='white')
         )
-        st.plotly_chart(scatter_fig, use_container_width=True)
+        st.plotly_chart(fig_performance, use_container_width=True)
 
-    # --- TABLE OF OPTIMAL WEIGHTS ---
-    # Garis pemisah sebelum table
-    st.markdown("<hr style='border-color:#34495e; margin:2rem 0;'>", unsafe_allow_html=True)
+        # --- PIE CHART & SCATTER PLOT ---
+        st.markdown("<hr style='border-color:#34495e; margin:2rem 0;'>", unsafe_allow_html=True)
 
-    st.subheader("🔢 Optimal Portfolio Weights")
-    st.dataframe(weights_df.style.format({"Weight": "{:.2%}"}))
+        weights_df = pd.DataFrame({
+            'Stock': stock_list,
+            'Weight': optimal_weights
+        })
+        pie_chart = go.Figure(data=[go.Pie(
+            labels=weights_df['Stock'], values=weights_df['Weight'], hole=0.4
+        )])
+        pie_chart.update_layout(
+            title="Optimal Portfolio Allocation", 
+            font=dict(color='white'), paper_bgcolor="#050915"
+        )
 
-    st.markdown(
-    f"""
-    <div style="background-color:#1e2a47; padding: 10px; border-radius: 5px; margin-top: 10px;">
-        <p style="margin: 0; color: white; font-size: 16px;">
-            The above allocation represents the optimal weights based on the highest 
-            <strong>Sharpe Ratio</strong> achieved from <strong>{scenarios}</strong> Monte Carlo simulation trials.
-            This suggests that this portfolio is expected to deliver the best risk-adjusted return.
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True
-    )
-    
+        col4, col5 = st.columns([1, 2])
+        with col4:
+            st.plotly_chart(pie_chart, use_container_width=True)
+        with col5:
+            scatter_fig = go.Figure()
+            scatter_fig.add_trace(go.Scatter(
+                x=volatility_array, y=returns_array, mode='markers',
+                marker=dict(color=sharpe_array, colorscale='Viridis', showscale=True),
+                name='Portfolios'
+            ))
+            scatter_fig.add_trace(go.Scatter(
+                x=[optimal_volatility], y=[optimal_return], mode='markers',
+                marker=dict(color='orange', size=12, line=dict(width=2, color='black')),
+                name='Optimal'
+            ))
+            scatter_fig.update_layout(
+                title="Portfolio Optimization — Return vs Volatility",
+                xaxis_title="Annualized Volatility",
+                yaxis_title="Annualized Return",
+                plot_bgcolor='#050915', paper_bgcolor='#050915', font=dict(color='white')
+            )
+            st.plotly_chart(scatter_fig, use_container_width=True)
+
+        # --- TABLE OF OPTIMAL WEIGHTS ---
+        st.markdown("<hr style='border-color:#34495e; margin:2rem 0;'>", unsafe_allow_html=True)
+
+        st.subheader("🔢 Optimal Portfolio Weights")
+        st.dataframe(weights_df.style.format({"Weight": "{:.2%}"}))
+
+        st.markdown(
+        f"""
+        <div style="background-color:#1e2a47; padding: 10px; border-radius: 5px; margin-top: 10px;">
+            <p style="margin: 0; color: white; font-size: 16px;">
+                The above allocation represents the optimal weights based on the highest 
+                <strong>Sharpe Ratio</strong> achieved from <strong>{scenarios}</strong> Monte Carlo simulation trials.
+                This suggests that this portfolio is expected to deliver the best risk-adjusted return.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+        )
+        
         # --- ANALYSIS ---
-    # Garis pemisah sebelum analysis
-    st.markdown("<hr style='border-color:#34495e; margin:2rem 0;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border-color:#34495e; margin:2rem 0;'>", unsafe_allow_html=True)
 
-    st.markdown(f"""
-### 📝 Analysis:
-The **Sharpe Ratio** measures risk-adjusted return by subtracting the risk-free rate from the portfolio’s return and dividing by its volatility. A higher Sharpe Ratio means the portfolio yields more return per unit of risk.
+        st.markdown(f"""
+        ### 📝 Analysis:
+        The **Sharpe Ratio** measures risk-adjusted return by subtracting the risk-free rate from the portfolio’s return and dividing by its volatility. A higher Sharpe Ratio means the portfolio yields more return per unit of risk.
 
-**Program Functionality:**
-- **Monte Carlo Simulations:** Generate {scenarios} random portfolio allocations.
-- **Risk Evaluation:** Identify the portfolio with the highest Sharpe Ratio.
-- **Dynamic Analysis:** Input any valid stock tickers; the tool fetches data from Yahoo Finance and computes optimal allocations.
-    """)
-    
-    # Tentukan rating berdasarkan nilai optimal_sharpe
-    if optimal_sharpe < 1:
-        rating = "🔻 Poor"
-    elif optimal_sharpe < 2:
-        rating = "⚖️ Acceptable"
-    elif optimal_sharpe < 3:
-        rating = "👍 Good"
-    else:
-        rating = "🌟 Excellent"
+        **Program Functionality:**
+        - **Monte Carlo Simulations:** Generate {scenarios} random portfolio allocations.
+        - **Risk Evaluation:** Identify the portfolio with the highest Sharpe Ratio.
+        - **Dynamic Analysis:** Input any valid stock tickers; the tool fetches data from Yahoo Finance and computes optimal allocations.
+        """)
+        
+        # Tentukan rating berdasarkan nilai optimal_sharpe
+        if optimal_sharpe < 1:
+            rating = "🔻 Poor"
+        elif optimal_sharpe < 2:
+            rating = "⚖️ Acceptable"
+        elif optimal_sharpe < 3:
+            rating = "👍 Good"
+        else:
+            rating = "🌟 Excellent"
 
-    # Tampilkan kesimpulan dalam container
-    st.markdown(f"""
-<div style="background-color:#06452d; padding: 10px; border-radius: 5px; margin-top: 10px;">
-    <p style="margin: 0; color: white; font-size: 16px;">
-        <strong>Conclusion:</strong> The portfolio's Sharpe Ratio is <strong>{optimal_sharpe:.2f}</strong>, 
-        classified as <strong>{rating}</strong>. Consider researching alternative financial instruments or rebalancing strategies to improve your risk-adjusted returns.
-    </p>
-</div>
-""", unsafe_allow_html=True)
-    
-    # --- SHARPE RATIO BENCHMARKS ---
-    st.markdown("<hr style='border-color:#34495e; margin:2rem 0;'>", unsafe_allow_html=True)
+        # Tampilkan kesimpulan dalam container
+        st.markdown(f"""
+        <div style="background-color:#06452d; padding: 10px; border-radius: 5px; margin-top: 10px;">
+            <p style="margin: 0; color: white; font-size: 16px;">
+                <strong>Conclusion:</strong> The portfolio's Sharpe Ratio is <strong>{optimal_sharpe:.2f}</strong>, 
+                classified as <strong>{rating}</strong>. Consider researching alternative financial instruments or rebalancing strategies to improve your risk-adjusted returns.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # --- SHARPE RATIO BENCHMARKS ---
+        st.markdown("<hr style='border-color:#34495e; margin:2rem 0;'>", unsafe_allow_html=True)
 
-    col_rule1, col_rule2, col_rule3, col_rule4 = st.columns(4)
-    with col_rule1:
-        st.markdown("<div class='metric-box-rule'>🔻 < 1<br>Poor</div>", unsafe_allow_html=True)
-    with col_rule2:
-        st.markdown("<div class='metric-box-rule'>⚖️ 1 to 2<br>Acceptable</div>", unsafe_allow_html=True)
-    with col_rule3:
-        st.markdown("<div class='metric-box-rule'>👍 2 to 3<br>Good</div>", unsafe_allow_html=True)
-    with col_rule4:
-        st.markdown("<div class='metric-box-rule'>🌟 > 3<br>Excellent</div>", unsafe_allow_html=True)
-    
-    # --- FOOTER ---
-    st.markdown("""<hr style="border-top: 2px solid #2c3e50;">""", unsafe_allow_html=True)
-    st.markdown("<div class='footer-text'>Created by Abida Massi</div>", unsafe_allow_html=True)
-    
+        col_rule1, col_rule2, col_rule3, col_rule4 = st.columns(4)
+        with col_rule1:
+            st.markdown("<div class='metric-box-rule'>🔻 < 1<br>Poor</div>", unsafe_allow_html=True)
+        with col_rule2:
+            st.markdown("<div class='metric-box-rule'>⚖️ 1 to 2<br>Acceptable</div>", unsafe_allow_html=True)
+        with col_rule3:
+            st.markdown("<div class='metric-box-rule'>👍 2 to 3<br>Good</div>", unsafe_allow_html=True)
+        with col_rule4:
+            st.markdown("<div class='metric-box-rule'>🌟 > 3<br>Excellent</div>", unsafe_allow_html=True)
+        
+        # --- FOOTER ---
+        st.markdown("""<hr style="border-top: 2px solid #2c3e50;">""", unsafe_allow_html=True)
+        st.markdown("<div class='footer-text'>Created by Abida Massi</div>", unsafe_allow_html=True)
 else:
     st.info("Please enter stock tickers and click 'Submit' in the sidebar to run the analysis.")
