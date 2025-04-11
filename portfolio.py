@@ -327,7 +327,7 @@ The **Sharpe Ratio** measures risk-adjusted return by subtracting the risk-free 
 <div style="background-color:#06452d; padding: 10px; border-radius: 5px; margin-top: 10px;">
     <p style="margin: 0; color: white; font-size: 16px;">
         <strong>Conclusion:</strong> The portfolio's Sharpe Ratio is <strong>{optimal_sharpe:.2f}</strong>, 
-        classified as <strong>{rating}</strong>.
+        classified as <strong>{rating}</strong>. Consider researching alternative financial instruments or rebalancing strategies to improve your risk-adjusted returns.
     </p>
 </div>
 """, unsafe_allow_html=True)
