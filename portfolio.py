@@ -298,7 +298,7 @@ if submitted:
     unsafe_allow_html=True
     )
     
-    # --- ANALYSIS ---
+        # --- ANALYSIS ---
     # Garis pemisah sebelum analysis
     st.markdown("<hr style='border-color:#34495e; margin:2rem 0;'>", unsafe_allow_html=True)
 
@@ -311,31 +311,29 @@ The **Sharpe Ratio** measures risk-adjusted return by subtracting the risk-free 
 - **Risk Evaluation:** Identify the portfolio with the highest Sharpe Ratio.
 - **Dynamic Analysis:** Input any valid stock tickers; the tool fetches data from Yahoo Finance and computes optimal allocations.
     """)
-    # Misalnya kita sudah punya nilai Sharpe Ratio final bernama 'optimal_sharpe'
-# Tentukan rating berdasarkan interval Sharpe Ratio:
-sharpe_value = optimal_sharpe
-if sharpe_value < 1:
-    rating = "🔻 Poor"
-elif sharpe_value < 2:
-    rating = "⚖️ Acceptable"
-elif sharpe_value < 3:
-    rating = "👍 Good"
-else:
-    rating = "🌟 Excellent"
+    
+    # Tentukan rating berdasarkan nilai optimal_sharpe
+    if optimal_sharpe < 1:
+        rating = "🔻 Poor"
+    elif optimal_sharpe < 2:
+        rating = "⚖️ Acceptable"
+    elif optimal_sharpe < 3:
+        rating = "👍 Good"
+    else:
+        rating = "🌟 Excellent"
 
-# Buat container berwarna selaras dengan tema
-st.markdown(f"""
+    # Tampilkan kesimpulan dalam container
+    st.markdown(f"""
 <div style="background-color:#1e2a47; padding: 10px; border-radius: 5px; margin-top: 10px;">
     <p style="margin: 0; color: white; font-size: 16px;">
         <strong>Conclusion:</strong><br>
-        The portfolio's Sharpe Ratio is <strong>{sharpe_value:.2f}</strong>, 
+        The portfolio's Sharpe Ratio is <strong>{optimal_sharpe:.2f}</strong>, 
         classified as <strong>{rating}</strong>.
     </p>
 </div>
 """, unsafe_allow_html=True)
-
+    
     # --- SHARPE RATIO BENCHMARKS ---
-    # Garis pemisah sebelum sharpe ratio benchmarks
     st.markdown("<hr style='border-color:#34495e; margin:2rem 0;'>", unsafe_allow_html=True)
 
     col_rule1, col_rule2, col_rule3, col_rule4 = st.columns(4)
