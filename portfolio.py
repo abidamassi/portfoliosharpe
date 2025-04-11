@@ -290,11 +290,12 @@ if submitted:
         st.markdown(
         f"""
         <div style="background-color:#1e2a47; padding: 10px; border-radius: 5px; margin-top: 10px;">
-            <p style="margin: 0; color: white; font-size: 16px;">
-                The above allocation represents the optimal weights based on the highest 
-                <strong>Sharpe Ratio</strong> achieved from <strong>{scenarios}</strong> Monte Carlo simulation trials.
-                This suggests that this portfolio is expected to deliver the best risk-adjusted return.
-            </p>
+           <p style="margin: 0; color: white; font-size: 16px;">
+            After running <strong>{scenarios}</strong> Monte Carlo simulations, we identified the highest 
+            <strong>Sharpe Ratio</strong> of <strong>{optimal_sharpe:.2f}</strong> for the above allocation.
+            This indicates that, among all tested portfolio weight combinations, 
+            this particular mix is expected to provide the strongest risk-adjusted return.
+        </p>
         </div>
         """,
         unsafe_allow_html=True
