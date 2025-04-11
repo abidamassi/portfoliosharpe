@@ -299,9 +299,8 @@ if submitted:
         st.markdown(f"""
 <div style="background-color:#1e2a47; padding: 10px; border-radius: 5px; margin-top: 10px;">
     <p style="margin: 0; color: white; font-size: 16px;">
-        🧮 After running <strong>{scenarios}</strong> Monte Carlo simulation trials, we found the highest 
-        <strong>Sharpe Ratio</strong> of <strong>{optimal_sharpe:.2f}</strong> with the above allocation.
-        This indicates that, among all simulated combinations, this allocation is expected to deliver the best risk-adjusted return.
+        🧮 After <strong>{scenarios}</strong> Monte Carlo simulation trials, an allocation with the highest <strong>Sharpe Ratio</strong> of 
+        <strong>{optimal_sharpe:.2f}</strong> was identified. This indicates that, among all simulated combinations, this allocation is expected to provide the optimal risk-adjusted return.
     </p>
 </div>
 """, unsafe_allow_html=True)
