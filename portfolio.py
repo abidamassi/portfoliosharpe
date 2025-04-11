@@ -109,10 +109,9 @@ st.markdown(
         border-top: 2px solid #34495e;
     }
 
-    /* Menyesuaikan tombol submit di sidebar */
-    /* Ubah tampilan tombol submit di sidebar */
+    /* Ubah tampilan tombol submit di sidebar dengan warna yang lebih gelap */
     section[data-testid="stSidebar"] .stButton button {
-        background-color: #f39c12 !important; /* Warm orange */
+        background-color: #d35400 !important; /* Dark orange */
         color: white !important;             /* Teks putih kontras */
         width: 100% !important;
         padding: 10px 0 !important;
@@ -121,9 +120,8 @@ st.markdown(
         border-radius: 5px !important;
         cursor: pointer !important;
     }
-    /* Hover state: sedikit lebih gelap */
     section[data-testid="stSidebar"] .stButton button:hover {
-        background-color: #e67e22 !important; 
+        background-color: #ba4a00 !important; /* Sedikit lebih gelap saat hover */
     }
     
     </style>
