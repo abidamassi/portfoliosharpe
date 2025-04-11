@@ -350,4 +350,6 @@ The **Sharpe Ratio** measures risk-adjusted return by subtracting the risk-free 
     st.markdown("<div class='footer-text'>Created by Abida Massi</div>", unsafe_allow_html=True)
     
 else:
-    st.info("Please enter stock tickers and click 'Submit' in the sidebar to run the analysis.")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.info("Please enter stock tickers and click 'Submit' in the sidebar to run the analysis.")
