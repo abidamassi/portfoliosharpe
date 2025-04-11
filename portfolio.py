@@ -110,17 +110,20 @@ st.markdown(
     }
 
     /* Menyesuaikan tombol submit di sidebar */
-    section[data-testid="stSidebar"] div.stButton button {
-        background-color: #f9ca24 !important; /* Warna kuning */
-        color: black !important;              /* Ubah teks ke hitam */
+    /* Ubah tampilan tombol submit di sidebar */
+    section[data-testid="stSidebar"] .stButton button {
+        background-color: #f39c12 !important; /* Warm orange */
+        color: white !important;             /* Teks putih kontras */
         width: 100% !important;
         padding: 10px 0 !important;
         font-weight: bold !important;
         border: none !important;
         border-radius: 5px !important;
+        cursor: pointer !important;
     }
-    section[data-testid="stSidebar"] div.stButton button:hover {
-        background-color: #f1c40f !important; /* Warna saat hover */
+    /* Hover state: sedikit lebih gelap */
+    section[data-testid="stSidebar"] .stButton button:hover {
+        background-color: #e67e22 !important; 
     }
     
     </style>
