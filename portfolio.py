@@ -11,9 +11,7 @@ st.set_page_config(page_title="Optimal Portfolio Management — Finance Modeling
 st.markdown(
     """
     <style>
-    /* Menghilangkan menu hamburger dan header */
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
+
     
     /* ----- GLOBAL STYLES ----- */
     html, body, [class*="css"] {
